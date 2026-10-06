@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaPizzaNatal — Cardápio Oficial e Pedidos</title>
+  <meta name="description" content="Cardápio oficial da LaPizzaNatal. Pizzas tradicionais e artesanais com entrega gratuita exclusivamente na Zona Norte de Natal/RN.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- CABEÇALHO INSTITUCIONAL -->
+  <header class="header">
+    <div class="header-container">
+      <div class="header-brand">
+        <img src="assets/images/logo.png" alt="Logotipo LaPizzaNatal" class="logo">
+        <div class="brand-text">
+          <h1 class="brand-name">LaPizzaNatal</h1>
+          <p class="brand-tagline">Pizzas Artesanais &bull; Cardápio Oficial</p>
+        </div>
+      </div>
+
+      <div class="header-details">
+        <div class="info-row">
+          <span class="info-icon">⏰</span>
+          <span class="info-text">Todos os dias &bull; 18h às 23h</span>
+        </div>
+        <div class="info-row">
+          <span class="info-icon">📍</span>
+          <span class="info-text">Av. Senhor do Bonfim, 4135 – Natal/RN</span>
+        </div>
+        <div class="info-contacts">
+          <a href="https://wa.me/5584998992266" target="_blank" rel="noopener noreferrer" class="contact-badge" title="WhatsApp LaPizzaNatal">
+            <span class="contact-icon">📱</span> (84) 99899-2266
+          </a>
+          <a href="https://instagram.com/lapizzanatal" target="_blank" rel="noopener noreferrer" class="contact-badge" title="Instagram LaPizzaNatal">
+            <span class="contact-icon">📸</span> @lapizzanatal
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- AVISO DE ENTREGA -->
+  <aside class="delivery-notice" aria-label="Informações de Entrega">
+    <div class="delivery-container">
+      <div class="delivery-tag">🛵 Entrega</div>
+      <div class="delivery-info">
+        <strong class="delivery-highlight">Entregas exclusivamente na Zona Norte de Natal/RN</strong>
+        <span class="delivery-free">Sem taxa de entrega</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- NAVEGAÇÃO RÁPIDA POR CATEGORIAS & INDICADOR DO CARRINHO -->
+  <nav class="category-nav" aria-label="Navegação por categorias">
+    <div class="nav-container">
+      <div class="nav-chips-scroll">
+        <a href="#secao-salgadas" class="nav-chip active">🍕 Pizzas Salgadas</a>
+        <a href="#secao-doces" class="nav-chip">🍫 Pizzas Doces</a>
+        <a href="#secao-bordas" class="nav-chip">🧀 Bordas</a>
+        <a href="#secao-bebidas" class="nav-chip">🥤 Bebidas</a>
+      </div>
+      <div class="cart-indicator-wrap">
+        <button type="button" id="cart-indicator" class="cart-indicator" aria-label="Abrir carrinho de compras" title="Ver itens no carrinho">
+          🛒 Carrinho (<span id="cart-count">0</span>)
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CARDÁPIO PRINCIPAL -->
+  <main class="menu-main">
+    <div class="menu-container">
+
+      <!-- SEÇÃO 1: PIZZAS SALGADAS -->
+      <section id="secao-salgadas" class="menu-section">
+        <div class="section-title-wrap">
+          <h2 class="section-title">🍕 Pizzas Salgadas</h2>
+          <span class="section-count" id="count-salgadas">26 sabores</span>
+        </div>
+        <p class="section-instruction">Toque em qualquer pizza para escolher o tamanho, borda ou montar meio a meio.</p>
+        <div class="pizza-grid" id="grid-pizzas-salgadas" aria-live="polite">
+          <!-- Renderizado dinamicamente via JS a partir de data/cardapio.js -->
+        </div>
+      </section>
+
+      <!-- SEÇÃO 2: PIZZAS DOCES -->
+      <section id="secao-doces" class="menu-section">
+        <div class="section-title-wrap">
+          <h2 class="section-title">🍫 Pizzas Doces</h2>
+          <span class="section-count" id="count-doces">8 sabores</span>
+        </div>
+        <p class="section-instruction">Toque em qualquer pizza para escolher o tamanho, borda ou montar meio a meio.</p>
+        <div class="pizza-grid" id="grid-pizzas-doces" aria-live="polite">
+          <!-- Renderizado dinamicamente via JS a partir de data/cardapio.js -->
+        </div>
+      </section>
+
+      <!-- SEÇÃO 3: BORDAS -->
+      <section id="secao-bordas" class="menu-section">
+        <div class="section-title-wrap">
+          <h2 class="section-title">🧀 Bordas</h2>
+          <span class="section-count" id="count-bordas">4 opções</span>
+        </div>
+        <p class="section-description">Bordas recheadas especiais configuráveis diretamente na sua pizza.</p>
+        <div class="simple-grid" id="grid-bordas" aria-live="polite">
+          <!-- Renderizado dinamicamente via JS a partir de data/cardapio.js -->
+        </div>
+      </section>
+
+      <!-- SEÇÃO 4: BEBIDAS -->
+      <section id="secao-bebidas" class="menu-section">
+        <div class="section-title-wrap">
+          <h2 class="section-title">🥤 Bebidas</h2>
+          <span class="section-count" id="count-bebidas">3 opções</span>
+        </div>
+        <div class="simple-grid" id="grid-bebidas" aria-live="polite">
+          <!-- Renderizado dinamicamente via JS a partir de data/cardapio.js -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- RODAPÉ INSTITUCIONAL -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <p class="footer-title">🍕 LaPizzaNatal</p>
+        <p class="footer-text">Av. Senhor do Bonfim, 4135 – Natal/RN &bull; Atendimento: Todos os dias das 18h às 23h</p>
+        <p class="footer-text">WhatsApp: (84) 99899-2266 &bull; Instagram: @lapizzanatal</p>
+      </div>
+      <div class="footer-academic">
+        <p>Projeto de Extensão Universitária II (PEX II &bull; ADS)</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL 1: CONFIGURADOR DE PIZZA -->
+  <div id="modal-backdrop" class="modal-backdrop" tabindex="-1"></div>
+  <div id="modal-configurador" class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-pizza-nome" aria-hidden="true">
+    <div class="modal-content">
+      
+      <!-- Cabeçalho do Modal -->
+      <header class="modal-header">
+        <div>
+          <span class="modal-kicker">🍕 Personalizar Pizza</span>
+          <h2 id="modal-pizza-nome" class="modal-title">Nome da Pizza</h2>
+        </div>
+        <button type="button" id="btn-fechar-modal" class="btn-close" aria-label="Fechar configurador">&times;</button>
+      </header>
+
+      <!-- Corpo do Modal -->
+      <div class="modal-body">
+        
+        <!-- Ingredientes do Sabor Principal -->
+        <div class="modal-ingredients-wrap">
+          <span class="ingredients-label">Ingredientes:</span>
+          <p id="modal-pizza-ingredientes" class="modal-ingredients">Ingredientes da pizza selecionada...</p>
+        </div>
+
+        <!-- 1. ESCOLHA DO TAMANHO -->
+        <section class="config-step" aria-labelledby="title-step-tamanho">
+          <h3 id="title-step-tamanho" class="step-title">
+            1. Escolha o tamanho <span class="step-required">*</span>
+          </h3>
+          <div id="modal-tamanhos-container" class="size-selector-grid">
+            <button type="button" id="btn-tamanho-P" class="size-btn" data-tamanho="P" aria-pressed="false">
+              <span class="size-letter">P</span>
+              <span class="size-desc">Pequena</span>
+              <span class="size-price" id="preco-tamanho-P">R$ 0,00</span>
+            </button>
+            <button type="button" id="btn-tamanho-M" class="size-btn" data-tamanho="M" aria-pressed="false">
+              <span class="size-letter">M</span>
+              <span class="size-desc">Média</span>
+              <span class="size-price" id="preco-tamanho-M">R$ 0,00</span>
+            </button>
+            <button type="button" id="btn-tamanho-G" class="size-btn selected" data-tamanho="G" aria-pressed="true">
+              <span class="size-letter">G</span>
+              <span class="size-desc">Grande</span>
+              <span class="size-price" id="preco-tamanho-G">R$ 0,00</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 2. ESCOLHA DOS SABORES (MEIO A MEIO) -->
+        <section class="config-step" aria-labelledby="title-step-sabores">
+          <h3 id="title-step-sabores" class="step-title">2. Sabores da pizza</h3>
+          
+          <div class="meio-a-meio-toggle-card">
+            <label class="toggle-container" for="toggle-meio-a-meio">
+              <input type="checkbox" id="toggle-meio-a-meio" class="toggle-checkbox">
+              <span class="toggle-switch"></span>
+              <span class="toggle-text-wrap">
+                <strong class="toggle-title">Adicionar segundo sabor (Meio a Meio)</strong>
+                <small class="toggle-subtitle">O valor será o preço do sabor mais caro no tamanho escolhido</small>
+              </span>
+            </label>
+          </div>
+
+          <div id="wrapper-segundo-sabor" class="wrapper-segundo-sabor" style="display: none;">
+            <label for="select-segundo-sabor" class="field-label">Escolha o 2º sabor:</label>
+            <select id="select-segundo-sabor" class="select-flavor" aria-label="Segundo sabor da pizza">
+              <!-- Opções de pizzas populadas dinamicamente via JS -->
+            </select>
+          </div>
+        </section>
+
+        <!-- 3. ESCOLHA DA BORDA -->
+        <section class="config-step" aria-labelledby="title-step-borda">
+          <h3 id="title-step-borda" class="step-title">3. Borda recheada (opcional)</h3>
+          <div id="modal-bordas-container" class="bordas-options-grid">
+            <!-- Opções de borda (radio buttons) renderizadas via JS -->
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Rodapé do Modal com Resumo e Adicionar -->
+      <footer class="modal-footer">
+        <div class="config-summary-card">
+          <div class="summary-line">
+            <span class="summary-label">Pizza:</span>
+            <span id="resumo-pizza-nome" class="summary-value">Calabresa</span>
+          </div>
+          <div class="summary-line">
+            <span class="summary-label">Tamanho:</span>
+            <span id="resumo-pizza-tamanho" class="summary-value">Grande (G)</span>
+          </div>
+          <div class="summary-line">
+            <span class="summary-label">Preço da pizza:</span>
+            <span id="resumo-preco-pizza" class="summary-value">R$ 0,00</span>
+          </div>
+          <div class="summary-line">
+            <span class="summary-label">Borda:</span>
+            <span id="resumo-pizza-borda" class="summary-value">Sem borda</span>
+          </div>
+          <div class="summary-line">
+            <span class="summary-label">Acréscimo da borda:</span>
+            <span id="resumo-preco-borda" class="summary-value">R$ 0,00</span>
+          </div>
+          <div class="summary-total-line">
+            <span class="total-label">TOTAL:</span>
+            <span id="resumo-total-valor" class="total-value">R$ 0,00</span>
+          </div>
+        </div>
+
+        <button type="button" id="btn-adicionar-carrinho" class="btn-add-cart">
+          🛒 Adicionar ao carrinho
+        </button>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: CARRINHO E CHECKOUT COMPLETO (ETAPA 5) -->
+  <div id="modal-carrinho-backdrop" class="modal-backdrop" tabindex="-1"></div>
+  <div id="modal-carrinho" class="modal-dialog modal-dialog-checkout" role="dialog" aria-modal="true" aria-labelledby="modal-carrinho-titulo" aria-hidden="true">
+    <div class="modal-content modal-content-checkout">
+      
+      <!-- Cabeçalho do Carrinho/Checkout -->
+      <header class="modal-header">
+        <div>
+          <span class="modal-kicker">LaPizzaNatal &bull; Pedidos</span>
+          <h2 id="modal-carrinho-titulo" class="modal-title">Seu Carrinho</h2>
+        </div>
+        <button type="button" id="btn-fechar-carrinho" class="btn-close" aria-label="Fechar carrinho">&times;</button>
+      </header>
+
+      <!-- ETAPA 1 DO CHECKOUT: ITENS DO CARRINHO -->
+      <div id="checkout-etapa-carrinho" class="checkout-view-step">
+        
+        <!-- Vista de Carrinho Vazio -->
+        <div id="carrinho-vazio-view" class="carrinho-vazio-container" style="display: none;">
+          <div class="empty-cart-icon">🛒</div>
+          <h3>Seu carrinho está vazio.</h3>
+          <p>Adicione deliciosas pizzas do nosso cardápio para começar seu pedido!</p>
+          <button type="button" id="btn-continuar-comprando-vazio" class="btn-secondary-action">
+            🍕 Voltar ao cardápio
+          </button>
+        </div>
+
+        <!-- Vista com Itens -->
+        <div id="carrinho-com-itens-view" class="carrinho-com-itens-container">
+          <div class="carrinho-scroll-area">
+            <div id="carrinho-itens-lista" class="carrinho-items-list">
+              <!-- Itens renderizados dinamicamente via JS -->
+            </div>
+          </div>
+
+          <!-- Totais e Avanço -->
+          <footer class="carrinho-footer">
+            <div class="delivery-notice-cart">
+              <span>🛵 Entrega sem taxa exclusivamente na Zona Norte de Natal/RN.</span>
+            </div>
+
+            <div class="carrinho-totals-card">
+              <div class="totals-line">
+                <span>Subtotal:</span>
+                <span id="carrinho-subtotal-valor" class="totals-val">R$ 0,00</span>
+              </div>
+              <div class="totals-line">
+                <span>Taxa de entrega:</span>
+                <span class="totals-free">R$ 0,00 (Grátis)</span>
+              </div>
+              <div class="totals-line totals-line-main">
+                <strong>TOTAL:</strong>
+                <strong id="carrinho-total-valor" class="totals-main-val">R$ 0,00</strong>
+              </div>
+            </div>
+
+            <button type="button" id="btn-avancar-checkout" class="btn-primary-action">
+              Prosseguir para entrega →
+            </button>
+          </footer>
+        </div>
+      </div>
+
+      <!-- ETAPA 2 DO CHECKOUT: FORMULÁRIO DE DADOS, ENDEREÇO E PAGAMENTO -->
+      <div id="checkout-etapa-dados" class="checkout-view-step" style="display: none;">
+        <div class="checkout-form-scroll-area">
+          
+          <button type="button" id="btn-voltar-para-carrinho" class="btn-link-voltar">
+            &larr; Voltar e alterar itens do carrinho
+          </button>
+
+          <!-- 1. IDENTIFICAÇÃO DO CLIENTE -->
+          <section class="checkout-form-section">
+            <h3 class="form-section-title">1. Identificação</h3>
+            <div class="form-group">
+              <label for="checkout-nome" class="form-label">Nome completo <span class="step-required">*</span></label>
+              <input type="text" id="checkout-nome" class="form-input" placeholder="Seu nome" required autocomplete="name">
+            </div>
+          </section>
+
+          <!-- 2. ENDEREÇO DE ENTREGA -->
+          <section class="checkout-form-section">
+            <h3 class="form-section-title">2. Endereço de entrega</h3>
+            
+            <div class="delivery-warning-box">
+              <span class="warning-icon">📍</span>
+              <div>
+                <strong>Entregas exclusivamente na Zona Norte de Natal/RN.</strong>
+                <p>Não cobramos taxa de entrega.</p>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group span-2">
+                <label for="checkout-rua" class="form-label">Rua / Avenida <span class="step-required">*</span></label>
+                <input type="text" id="checkout-rua" class="form-input" placeholder="Ex: Av. Senhor do Bonfim" required autocomplete="street-address">
+              </div>
+              <div class="form-group">
+                <label for="checkout-numero" class="form-label">Número <span class="step-required">*</span></label>
+                <input type="text" id="checkout-numero" class="form-input" placeholder="Ex: 4135" required>
+              </div>
+              <div class="form-group">
+                <label for="checkout-complemento" class="form-label">Complemento (opcional)</label>
+                <input type="text" id="checkout-complemento" class="form-input" placeholder="Apto, Casa, Bloco...">
+              </div>
+              <div class="form-group span-2">
+                <label for="checkout-bairro" class="form-label">Bairro <span class="step-required">*</span></label>
+                <input type="text" id="checkout-bairro" class="form-input" placeholder="Ex: Igapó, Potengi, Pajuçara..." required>
+              </div>
+              <div class="form-group span-2">
+                <label for="checkout-referencia" class="form-label">Ponto de referência (opcional)</label>
+                <input type="text" id="checkout-referencia" class="form-input" placeholder="Ex: Próximo à praça / supermercado">
+              </div>
+            </div>
+
+            <!-- Confirmação obrigatória declarada pelo cliente -->
+            <div class="form-checkbox-card">
+              <label class="checkbox-label" for="checkout-confirma-zona-norte">
+                <input type="checkbox" id="checkout-confirma-zona-norte" class="checkbox-input" required>
+                <span>Confirmo que o endereço informado está localizado na <strong>Zona Norte de Natal/RN</strong>.</span>
+              </label>
+            </div>
+          </section>
+
+          <!-- 3. FORMA DE PAGAMENTO -->
+          <section class="checkout-form-section">
+            <h3 class="form-section-title">3. Forma de pagamento <span class="step-required">*</span></h3>
+            
+            <div class="payment-options-grid">
+              <label class="payment-card-label">
+                <input type="radio" name="forma-pagamento" value="pix">
+                <div class="payment-card-content">
+                  <span class="pay-icon">💠</span>
+                  <span class="pay-title">Pix</span>
+                  <span class="pay-desc">Chave e QR Code instantâneo</span>
+                </div>
+              </label>
+
+              <label class="payment-card-label">
+                <input type="radio" name="forma-pagamento" value="dinheiro">
+                <div class="payment-card-content">
+                  <span class="pay-icon">💵</span>
+                  <span class="pay-title">Dinheiro</span>
+                  <span class="pay-desc">Informar se precisa de troco</span>
+                </div>
+              </label>
+
+              <label class="payment-card-label">
+                <input type="radio" name="forma-pagamento" value="cartao">
+                <div class="payment-card-content">
+                  <span class="pay-icon">💳</span>
+                  <span class="pay-title">Cartão na entrega</span>
+                  <span class="pay-desc">Maquininha na sua porta</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- PAINEL DINÂMICO 1: PIX -->
+            <div id="painel-pagamento-pix" class="payment-panel-detail" style="display: none;">
+              <h4 class="panel-detail-title">Pagamento via Pix</h4>
+              <p class="panel-detail-desc">Utilize o aplicativo do seu banco para ler o QR Code ou copie a chave Pix:</p>
+              
+              <div class="pix-qrcode-wrapper">
+                <div id="pix-qrcode-container" class="pix-qrcode-box">
+                  <!-- QR Code SVG inserido dinamicamente -->
+                </div>
+              </div>
+
+              <div class="pix-key-box">
+                <div class="pix-key-info">
+                  <span class="pix-key-label">Chave Pix (Telefone):</span>
+                  <strong id="pix-chave-texto" class="pix-key-value">84998992266</strong>
+                  <span class="pix-receiver">Recebedor: <strong>Guido O. R. da Trindade</strong> &bull; Natal/RN</span>
+                </div>
+                <button type="button" id="btn-copiar-chave-pix" class="btn-copy-pix">
+                  📋 Copiar chave Pix
+                </button>
+              </div>
+
+              <div class="pix-notice-box">
+                <p>⚠️ <strong>Após realizar o Pix, envie o comprovante pelo WhatsApp da LaPizzaNatal.</strong></p>
+                <button type="button" id="btn-enviar-comprovante-topo" class="btn-whatsapp-comprovante-inline">
+                  📲 Enviar comprovante pelo WhatsApp
+                </button>
+              </div>
+            </div>
+
+            <!-- PAINEL DINÂMICO 2: DINHEIRO -->
+            <div id="painel-pagamento-dinheiro" class="payment-panel-detail" style="display: none;">
+              <h4 class="panel-detail-title">Pagamento em Dinheiro</h4>
+              <p class="panel-detail-desc">Você precisará de troco na entrega?</p>
+
+              <div class="troco-options">
+                <label class="troco-option-label">
+                  <input type="radio" name="opcao-troco" id="troco-nao" value="nao" checked>
+                  <span>Não preciso de troco</span>
+                </label>
+                <label class="troco-option-label">
+                  <input type="radio" name="opcao-troco" id="troco-sim" value="sim">
+                  <span>Preciso de troco</span>
+                </label>
+              </div>
+
+              <div id="wrapper-troco-valor" class="wrapper-troco-valor" style="display: none;">
+                <label for="input-troco-para" class="form-label">Troco para quanto? <span class="step-required">*</span></label>
+                <div class="input-currency-wrap">
+                  <span class="currency-symbol">R$</span>
+                  <input type="number" id="input-troco-para" class="form-input" placeholder="Ex: 100.00" step="0.50" min="0">
+                </div>
+                <div id="resultado-troco-calculo" class="troco-feedback"></div>
+              </div>
+            </div>
+
+            <!-- PAINEL DINÂMICO 3: CARTÃO NA ENTREGA -->
+            <div id="painel-pagamento-cartao" class="payment-panel-detail" style="display: none;">
+              <h4 class="panel-detail-title">Cartão na Entrega</h4>
+              <p class="card-machine-notice">
+                O pagamento será realizado no momento da entrega, utilizando a maquininha da LaPizzaNatal (Débito ou Crédito).
+              </p>
+            </div>
+
+          </section>
+
+          <!-- BOTÃO FINAL DE CONFIRMAÇÃO DO PEDIDO -->
+          <div class="checkout-footer-action">
+            <button type="button" id="btn-confirmar-pedido" class="btn-primary-action btn-confirm-order">
+              ✅ Confirmar pedido
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ETAPA 3 DO CHECKOUT: SUCESSO / PEDIDO PREPARADO -->
+      <div id="checkout-etapa-sucesso" class="checkout-view-step" style="display: none;">
+        <div class="sucesso-container">
+          <div class="sucesso-icon">🍕</div>
+          <h2>Pedido preparado!</h2>
+          <div class="order-number-badge">
+            <span id="sucesso-numero-pedido">#1042</span>
+          </div>
+          <p class="sucesso-msg">
+            Seu pedido foi estruturado e está pronto para ser enviado à <strong>LaPizzaNatal</strong>.
+          </p>
+          <p class="sucesso-submsg">
+            Clique no botão abaixo para abrir a conversa no WhatsApp com todos os detalhes do seu pedido formatados:
+          </p>
+
+          <div class="sucesso-actions">
+            <button type="button" id="btn-whatsapp-pedido" class="btn-whatsapp-action">
+              📲 Enviar pedido pelo WhatsApp
+            </button>
+
+            <button type="button" id="btn-whatsapp-comprovante" class="btn-whatsapp-secondary-action" style="display: none;">
+              📄 Enviar comprovante pelo WhatsApp
+            </button>
+
+            <button type="button" id="btn-sucesso-voltar-cardapio" class="btn-link-action">
+              🍕 Voltar ao cardápio
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST DE FEEDBACK TEMPORÁRIO -->
+  <div id="toast-feedback" class="toast-feedback" role="status" aria-live="polite"></div>
+
+  <!-- SCRIPT MODULAR PRINCIPAL -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
