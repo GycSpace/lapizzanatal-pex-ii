@@ -5,7 +5,23 @@
       "firebase.json",
       ".firebaserc",
       "**/.*",
-      "**/node_modules/**"
+      ".git",
+      ".git/**",
+      "**/.git/**",
+      ".gitignore",
+      ".firebase",
+      ".firebase/**",
+      "node_modules",
+      "**/node_modules/**",
+      ".env",
+      ".env.*",
+      "**/.env*",
+      "*.log",
+      "**/*.log",
+      "*.bak",
+      "**/*.bak",
+      "*.tmp",
+      "**/*.tmp"
     ]
   }
 }
