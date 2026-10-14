@@ -9,7 +9,8 @@ import {
   obterPrecoPizza
 } from './regras.js';
 import { adicionarAoCarrinho } from './carrinho.js';
-import { formatarMoeda } from './app.js';
+
+const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
 
 /**
  * Estado atual da pizza sendo configurada no modal

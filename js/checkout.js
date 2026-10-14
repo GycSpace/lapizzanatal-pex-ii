@@ -104,6 +104,11 @@ export function abrirCarrinho() {
   modalCarrinhoEl.setAttribute('aria-hidden', 'false');
   if (backdropCarrinhoEl) backdropCarrinhoEl.classList.add('active');
   document.body.classList.add('modal-open');
+
+  const cartScroll = modalCarrinhoEl.querySelector('.carrinho-scroll-area');
+  if (cartScroll) cartScroll.scrollTop = 0;
+  const modalContent = modalCarrinhoEl.querySelector('.modal-content');
+  if (modalContent) modalContent.scrollTop = 0;
 }
 
 /**
@@ -126,28 +131,28 @@ export function atualizarVisualizacaoCarrinho() {
 
   if (secaoCarrinhoEl && secaoDadosEl && secaoSucessoEl) {
     if (estadoCheckout.etapa === 'carrinho') {
-      secaoCarrinhoEl.style.display = 'block';
+      secaoCarrinhoEl.style.display = 'flex';
       secaoDadosEl.style.display = 'none';
       secaoSucessoEl.style.display = 'none';
     } else if (estadoCheckout.etapa === 'dados') {
       secaoCarrinhoEl.style.display = 'none';
-      secaoDadosEl.style.display = 'block';
+      secaoDadosEl.style.display = 'flex';
       secaoSucessoEl.style.display = 'none';
     } else if (estadoCheckout.etapa === 'sucesso') {
       secaoCarrinhoEl.style.display = 'none';
       secaoDadosEl.style.display = 'none';
-      secaoSucessoEl.style.display = 'block';
+      secaoSucessoEl.style.display = 'flex';
     }
   }
 
   if (itens.length === 0) {
-    if (viewCarrinhoVazioEl) viewCarrinhoVazioEl.style.display = 'block';
+    if (viewCarrinhoVazioEl) viewCarrinhoVazioEl.style.display = 'flex';
     if (viewCarrinhoComItensEl) viewCarrinhoComItensEl.style.display = 'none';
     return;
   }
 
   if (viewCarrinhoVazioEl) viewCarrinhoVazioEl.style.display = 'none';
-  if (viewCarrinhoComItensEl) viewCarrinhoComItensEl.style.display = 'block';
+  if (viewCarrinhoComItensEl) viewCarrinhoComItensEl.style.display = 'flex';
 
   // Renderizar itens
   if (containerItensEl) {
@@ -517,6 +522,10 @@ export function inicializarElementosCheckout() {
       }
       estadoCheckout.etapa = 'dados';
       atualizarVisualizacaoCarrinho();
+      const formScroll = document.querySelector('.checkout-form-scroll-area');
+      if (formScroll) formScroll.scrollTop = 0;
+      const modalContent = modalCarrinhoEl ? modalCarrinhoEl.querySelector('.modal-content') : null;
+      if (modalContent) modalContent.scrollTop = 0;
     });
   }
 
@@ -525,6 +534,10 @@ export function inicializarElementosCheckout() {
     btnVoltarCarrinhoEl.addEventListener('click', () => {
       estadoCheckout.etapa = 'carrinho';
       atualizarVisualizacaoCarrinho();
+      const cartScroll = document.querySelector('.carrinho-scroll-area');
+      if (cartScroll) cartScroll.scrollTop = 0;
+      const modalContent = modalCarrinhoEl ? modalCarrinhoEl.querySelector('.modal-content') : null;
+      if (modalContent) modalContent.scrollTop = 0;
     });
   }
 

@@ -1,7 +1,7 @@
 import { CARDAPIO } from '../data/cardapio.js';
 import { abrirConfigurador, inicializarElementosModal, exibirToast } from './configurador.js';
 import { observarCarrinho, obterQuantidadeItens, adicionarBebidaAoCarrinho } from './carrinho.js';
-import { abrirCarrinho, inicializarElementosCheckout } from './checkout.js';
+import { abrirCarrinho, inicializarElementosCheckout } from './checkout.js?v=2';
 
 /**
  * Formata um número no padrão monetário brasileiro (ex: R$ 36,90)

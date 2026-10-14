@@ -984,6 +984,11 @@ button, input, select {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
+}
+
+.checkout-view-step[style*="display: block"] {
+  display: flex !important;
 }
 
 /* Carrinho Vazio */
@@ -1037,12 +1042,19 @@ button, input, select {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
+}
+
+.carrinho-com-itens-container[style*="display: block"] {
+  display: flex !important;
 }
 
 .carrinho-scroll-area {
   padding: 1rem 1.25rem;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .carrinho-items-list {
@@ -1238,9 +1250,11 @@ button, input, select {
   padding: 1rem 1.25rem 2rem 1.25rem;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .btn-link-voltar {
@@ -1606,6 +1620,9 @@ button, input, select {
   align-items: center;
   gap: 0.75rem;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .sucesso-icon {
