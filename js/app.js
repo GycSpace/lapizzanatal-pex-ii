@@ -1,19 +1,10 @@
 import { CARDAPIO } from '../data/cardapio.js';
-import { abrirConfigurador, inicializarElementosModal, exibirToast } from './configurador.js';
+import { formatarMoeda } from './utils.js';
+import { abrirConfigurador, inicializarElementosModal, exibirToast } from './configurador.js?v=3';
 import { observarCarrinho, obterQuantidadeItens, adicionarBebidaAoCarrinho } from './carrinho.js';
-import { abrirCarrinho, inicializarElementosCheckout } from './checkout.js?v=2';
+import { abrirCarrinho, inicializarElementosCheckout } from './checkout.js?v=3';
 
-/**
- * Formata um número no padrão monetário brasileiro (ex: R$ 36,90)
- * @param {number} valor 
- * @returns {string}
- */
-export function formatarMoeda(valor) {
-  if (typeof valor !== 'number' || isNaN(valor)) {
-    return 'R$ 0,00';
-  }
-  return `R$ ${valor.toFixed(2).replace('.', ',')}`;
-}
+export { formatarMoeda };
 
 /**
  * Renderiza uma lista de pizzas no elemento alvo e vincula o configurador
@@ -31,15 +22,15 @@ function renderizarPizzas(pizzas, container) {
       </header>
       <p class="pizza-ingredients">${pizza.ingredientes}</p>
       <div class="pizza-prices" aria-label="Preços por tamanho">
-        <div class="price-pill" title="Tamanho Pequeno">
+        <div class="price-pill" data-tamanho="P" title="Tamanho Pequeno">
           <span class="size-label">P</span>
           <span class="price-value">${formatarMoeda(pizza.precos.P)}</span>
         </div>
-        <div class="price-pill" title="Tamanho Médio">
+        <div class="price-pill" data-tamanho="M" title="Tamanho Médio">
           <span class="size-label">M</span>
           <span class="price-value">${formatarMoeda(pizza.precos.M)}</span>
         </div>
-        <div class="price-pill" title="Tamanho Grande">
+        <div class="price-pill" data-tamanho="G" title="Tamanho Grande">
           <span class="size-label">G</span>
           <span class="price-value">${formatarMoeda(pizza.precos.G)}</span>
         </div>
@@ -51,11 +42,15 @@ function renderizarPizzas(pizzas, container) {
   const cards = container.querySelectorAll('.clickable-pizza');
   cards.forEach(card => {
     const id = card.getAttribute('data-id');
-    card.addEventListener('click', () => abrirConfigurador(id));
+    card.addEventListener('click', (e) => {
+      const pill = e.target.closest('.price-pill');
+      const tamanho = pill ? pill.getAttribute('data-tamanho') : 'G';
+      abrirConfigurador(id, tamanho);
+    });
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        abrirConfigurador(id);
+        abrirConfigurador(id, 'G');
       }
     });
   });

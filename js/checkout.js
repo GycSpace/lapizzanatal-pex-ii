@@ -8,9 +8,9 @@ import {
   removerItem, 
   limparCarrinho 
 } from './carrinho.js';
-import { formatarMoeda } from './app.js';
+import { formatarMoeda, converterValorTroco } from './utils.js';
 import { obterDadosPix, calcularTroco, gerarLinkComprovantePix } from './pagamento.js';
-import { exibirToast } from './configurador.js';
+import { exibirToast } from './configurador.js?v=3';
 
 const STORAGE_PEDIDO_KEY = 'lapizza_numero_pedido';
 
@@ -90,12 +90,67 @@ let btnAvancarCheckoutEl = null;
 let btnVoltarCarrinhoEl = null;
 let btnConfirmarPedidoEl = null;
 
+let elementoFocoAnteriorCarrinho = null;
+
+/**
+ * Verifica se um elemento pode receber foco com segurança fora do modal ocultado
+ * @param {HTMLElement|null} el
+ * @param {HTMLElement|null} modalRef
+ * @returns {boolean}
+ */
+function podeReceberFocoForaDoModal(el, modalRef) {
+  if (!el || typeof el.focus !== 'function') return false;
+  if (typeof document === 'undefined' || !document.body || !document.body.contains(el)) return false;
+  if (el === document.body || el === document.documentElement) return false;
+  if (modalRef && modalRef.contains(el)) return false;
+
+  if (typeof el.closest === 'function') {
+    if (el.closest('[aria-hidden="true"]')) return false;
+    const modalAncestral = el.closest('.modal-dialog');
+    if (
+      modalAncestral &&
+      (modalAncestral === modalRef ||
+        !modalAncestral.classList.contains('active') ||
+        modalAncestral.getAttribute('aria-hidden') === 'true')
+    ) {
+      return false;
+    }
+  }
+
+  let atual = el;
+  while (atual && atual !== document.body && atual !== document.documentElement) {
+    if (atual === modalRef) return false;
+    if (typeof atual.getAttribute === 'function' && atual.getAttribute('aria-hidden') === 'true') {
+      return false;
+    }
+    if (atual.classList && typeof atual.classList.contains === 'function' && atual.classList.contains('modal-dialog')) {
+      if (!atual.classList.contains('active')) return false;
+    }
+    if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+      const estilo = window.getComputedStyle(atual);
+      if (estilo.display === 'none' || estilo.visibility === 'hidden' || estilo.opacity === '0') {
+        return false;
+      }
+    }
+    atual = atual.parentElement || null;
+  }
+
+  return true;
+}
+
 /**
  * Abre o modal do carrinho
  */
 export function abrirCarrinho() {
   if (!modalCarrinhoEl) inicializarElementosCheckout();
   if (!modalCarrinhoEl) return;
+
+  const candidatoAtivo = typeof document !== 'undefined' ? document.activeElement : null;
+  if (podeReceberFocoForaDoModal(candidatoAtivo, modalCarrinhoEl)) {
+    elementoFocoAnteriorCarrinho = candidatoAtivo;
+  } else if (typeof document !== 'undefined') {
+    elementoFocoAnteriorCarrinho = document.getElementById('cart-indicator');
+  }
 
   estadoCheckout.etapa = 'carrinho';
   atualizarVisualizacaoCarrinho();
@@ -116,6 +171,38 @@ export function abrirCarrinho() {
  */
 export function fecharCarrinho() {
   if (!modalCarrinhoEl) return;
+
+  if (
+    typeof document !== 'undefined' &&
+    document.activeElement &&
+    (modalCarrinhoEl.contains(document.activeElement) || document.activeElement === backdropCarrinhoEl)
+  ) {
+    if (typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+  }
+
+  const cartBtn = typeof document !== 'undefined' ? document.getElementById('cart-indicator') : null;
+  let destinoFoco = null;
+  if (podeReceberFocoForaDoModal(cartBtn, modalCarrinhoEl)) {
+    destinoFoco = cartBtn;
+  } else if (podeReceberFocoForaDoModal(elementoFocoAnteriorCarrinho, modalCarrinhoEl)) {
+    destinoFoco = elementoFocoAnteriorCarrinho;
+  }
+
+  if (destinoFoco) {
+    destinoFoco.focus({ preventScroll: true });
+  }
+
+  if (
+    typeof document !== 'undefined' &&
+    document.activeElement &&
+    modalCarrinhoEl.contains(document.activeElement) &&
+    typeof document.activeElement.blur === 'function'
+  ) {
+    document.activeElement.blur();
+  }
+
   modalCarrinhoEl.classList.remove('active');
   modalCarrinhoEl.setAttribute('aria-hidden', 'true');
   if (backdropCarrinhoEl) backdropCarrinhoEl.classList.remove('active');
@@ -246,8 +333,9 @@ function atualizarPaineisPagamento() {
 
   if (estadoCheckout.formaPagamento === 'dinheiro') {
     if (inputTrocoParaEl && resultadoTrocoEl) {
-      const valorInformado = parseFloat(inputTrocoParaEl.value.replace(',', '.'));
-      if (estadoCheckout.precisaTroco && !isNaN(valorInformado)) {
+      const textoTroco = inputTrocoParaEl.value.trim();
+      if (estadoCheckout.precisaTroco && textoTroco !== '') {
+        const valorInformado = converterValorTroco(inputTrocoParaEl.value);
         const res = calcularTroco(total, valorInformado);
         if (res.valido) {
           resultadoTrocoEl.className = 'troco-feedback troco-valido';
@@ -306,7 +394,7 @@ export function validarDadosCheckout() {
 
   if (estadoCheckout.formaPagamento === 'dinheiro' && estadoCheckout.precisaTroco) {
     const total = obterTotalCarrinho();
-    const valorDigitado = inputTrocoParaEl ? parseFloat(inputTrocoParaEl.value.replace(',', '.')) : 0;
+    const valorDigitado = inputTrocoParaEl ? converterValorTroco(inputTrocoParaEl.value) : NaN;
     const resTroco = calcularTroco(total, valorDigitado);
     if (!resTroco.valido) {
       return { valido: false, erro: resTroco.erro };
@@ -394,10 +482,16 @@ function finalizarPedido() {
   const total = obterTotalCarrinho();
   const numeroPedido = gerarProximoNumeroPedido();
 
+  let valorTrocoConvertido = 0;
   let trocoEstimado = 0;
   if (estadoCheckout.formaPagamento === 'dinheiro' && estadoCheckout.precisaTroco) {
-    const valorDigitado = parseFloat(inputTrocoParaEl.value.replace(',', '.'));
-    trocoEstimado = Number((valorDigitado - total).toFixed(2));
+    valorTrocoConvertido = inputTrocoParaEl ? converterValorTroco(inputTrocoParaEl.value) : NaN;
+    const resTroco = calcularTroco(total, valorTrocoConvertido);
+    if (!resTroco.valido) {
+      alert(resTroco.erro);
+      return;
+    }
+    trocoEstimado = resTroco.troco;
   }
 
   // Criação do objeto do pedido estruturado
@@ -414,7 +508,7 @@ function finalizarPedido() {
     total: total,
     formaPagamento: estadoCheckout.formaPagamento,
     precisaTroco: estadoCheckout.precisaTroco,
-    valorTrocoPara: estadoCheckout.precisaTroco ? parseFloat(inputTrocoParaEl.value.replace(',', '.')) : 0,
+    valorTrocoPara: estadoCheckout.formaPagamento === 'dinheiro' && estadoCheckout.precisaTroco ? valorTrocoConvertido : 0,
     trocoEstimado: trocoEstimado
   };
 
@@ -504,6 +598,11 @@ export function inicializarElementosCheckout() {
 
   if (btnFecharModalEl) btnFecharModalEl.addEventListener('click', fecharCarrinho);
   if (backdropCarrinhoEl) backdropCarrinhoEl.addEventListener('click', fecharCarrinho);
+  if (modalCarrinhoEl) {
+    modalCarrinhoEl.addEventListener('click', (e) => {
+      if (e.target === modalCarrinhoEl) fecharCarrinho();
+    });
+  }
   if (btnContinuarComprandoVazioEl) btnContinuarComprandoVazioEl.addEventListener('click', fecharCarrinho);
   if (btnSucessoVoltarCardapioEl) {
     btnSucessoVoltarCardapioEl.addEventListener('click', () => {

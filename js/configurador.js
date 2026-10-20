@@ -9,8 +9,7 @@ import {
   obterPrecoPizza
 } from './regras.js';
 import { adicionarAoCarrinho } from './carrinho.js';
-
-const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+import { formatarMoeda } from './utils.js';
 
 /**
  * Estado atual da pizza sendo configurada no modal
@@ -225,26 +224,91 @@ function renderizarOpcoesBordas() {
   });
 }
 
+let elementoFocoAnteriorConfigurador = null;
+
+/**
+ * Verifica se um elemento pode receber foco com segurança fora do modal ocultado
+ * @param {HTMLElement|null} el
+ * @param {HTMLElement|null} modalRef
+ * @returns {boolean}
+ */
+function podeReceberFocoForaDoModal(el, modalRef) {
+  if (!el || typeof el.focus !== 'function') return false;
+  if (typeof document === 'undefined' || !document.body || !document.body.contains(el)) return false;
+  if (el === document.body || el === document.documentElement) return false;
+  if (modalRef && modalRef.contains(el)) return false;
+
+  if (typeof el.closest === 'function') {
+    if (el.closest('[aria-hidden="true"]')) return false;
+    const modalAncestral = el.closest('.modal-dialog');
+    if (
+      modalAncestral &&
+      (modalAncestral === modalRef ||
+        !modalAncestral.classList.contains('active') ||
+        modalAncestral.getAttribute('aria-hidden') === 'true')
+    ) {
+      return false;
+    }
+  }
+
+  let atual = el;
+  while (atual && atual !== document.body && atual !== document.documentElement) {
+    if (atual === modalRef) return false;
+    if (typeof atual.getAttribute === 'function' && atual.getAttribute('aria-hidden') === 'true') {
+      return false;
+    }
+    if (atual.classList && typeof atual.classList.contains === 'function' && atual.classList.contains('modal-dialog')) {
+      if (!atual.classList.contains('active')) return false;
+    }
+    if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+      const estilo = window.getComputedStyle(atual);
+      if (estilo.display === 'none' || estilo.visibility === 'hidden' || estilo.opacity === '0') {
+        return false;
+      }
+    }
+    atual = atual.parentElement || null;
+  }
+
+  return true;
+}
+
 /**
  * Abre o configurador para a pizza indicada
  * @param {string} pizzaId 
+ * @param {string} [tamanhoInicial='G']
  */
-export function abrirConfigurador(pizzaId) {
+export function abrirConfigurador(pizzaId, tamanhoInicial = 'G') {
   const pizza = buscarPizzaPorId(pizzaId);
   if (!pizza) {
     console.error(`Pizza não encontrada com id: ${pizzaId}`);
     return;
   }
 
-  // Inicializar estado limpo com tamanho padrão G
+  if (!modalEl) inicializarElementosModal();
+
+  const cardAcionador = typeof document !== 'undefined'
+    ? document.querySelector(`.clickable-pizza[data-id="${pizzaId}"]`)
+    : null;
+  const candidatoAtivo = typeof document !== 'undefined' ? document.activeElement : null;
+
+  if (podeReceberFocoForaDoModal(cardAcionador, modalEl)) {
+    elementoFocoAnteriorConfigurador = cardAcionador;
+  } else if (podeReceberFocoForaDoModal(candidatoAtivo, modalEl)) {
+    elementoFocoAnteriorConfigurador = candidatoAtivo;
+  } else {
+    elementoFocoAnteriorConfigurador = null;
+  }
+
+  // Validar tamanho inicial ('P', 'M' ou 'G', fallback 'G')
+  const tamanhoValido = ['P', 'M', 'G'].includes(tamanhoInicial) ? tamanhoInicial : 'G';
+
+  // Inicializar estado limpo com o tamanho selecionado
   configAtual = {
     sabor1: pizza,
     sabor2: null,
-    tamanho: 'G',
+    tamanho: tamanhoValido,
     borda: null
   };
-
-  if (!modalEl) inicializarElementosModal();
 
   // Preencher dados do sabor principal
   if (nomePizzaEl) nomePizzaEl.textContent = pizza.nome;
@@ -261,8 +325,15 @@ export function abrirConfigurador(pizzaId) {
   // Atualizar tudo
   atualizarInterfaceModal();
 
+  // Redefinir rolagem para o topo do corpo do modal
+  const modalBodyEl = modalEl ? modalEl.querySelector('.modal-body') : null;
+  if (modalBodyEl) {
+    modalBodyEl.scrollTop = 0;
+  }
+
   // Exibir modal
   modalEl.classList.add('active');
+  if (backdropEl) backdropEl.classList.add('active');
   modalEl.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
 
@@ -275,7 +346,46 @@ export function abrirConfigurador(pizzaId) {
  */
 export function fecharConfigurador() {
   if (!modalEl) return;
+
+  if (
+    typeof document !== 'undefined' &&
+    document.activeElement &&
+    (modalEl.contains(document.activeElement) || document.activeElement === backdropEl)
+  ) {
+    if (typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+  }
+
+  const cardPizzaAtual = (typeof document !== 'undefined' && configAtual.sabor1)
+    ? document.querySelector(`.clickable-pizza[data-id="${configAtual.sabor1.id}"]`)
+    : null;
+  const fallbackCartBtn = typeof document !== 'undefined' ? document.getElementById('cart-indicator') : null;
+
+  let destinoFoco = null;
+  if (podeReceberFocoForaDoModal(cardPizzaAtual, modalEl)) {
+    destinoFoco = cardPizzaAtual;
+  } else if (podeReceberFocoForaDoModal(elementoFocoAnteriorConfigurador, modalEl)) {
+    destinoFoco = elementoFocoAnteriorConfigurador;
+  } else if (podeReceberFocoForaDoModal(fallbackCartBtn, modalEl)) {
+    destinoFoco = fallbackCartBtn;
+  }
+
+  if (destinoFoco) {
+    destinoFoco.focus({ preventScroll: true });
+  }
+
+  if (
+    typeof document !== 'undefined' &&
+    document.activeElement &&
+    modalEl.contains(document.activeElement) &&
+    typeof document.activeElement.blur === 'function'
+  ) {
+    document.activeElement.blur();
+  }
+
   modalEl.classList.remove('active');
+  if (backdropEl) backdropEl.classList.remove('active');
   modalEl.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('modal-open');
 }
@@ -335,6 +445,11 @@ export function inicializarElementosModal() {
   // Ouvinte: Fechar modal
   if (fecharBtnEl) fecharBtnEl.addEventListener('click', fecharConfigurador);
   if (backdropEl) backdropEl.addEventListener('click', fecharConfigurador);
+  if (modalEl) {
+    modalEl.addEventListener('click', (e) => {
+      if (e.target === modalEl) fecharConfigurador();
+    });
+  }
 
   // Ouvinte: Tecla ESC para acessibilidade
   document.addEventListener('keydown', (e) => {
