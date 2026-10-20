@@ -147,5 +147,5 @@ Realizei o pagamento via Pix referente ao pedido #${numeroPedido}.
 
 Estou enviando o comprovante em seguida.`;
 
-  return `https://wa.me/${CONFIG.empresa.whatsapp}?text=${encodeURIComponent(texto)}`;
+  return `https://api.whatsapp.com/send?phone=${CONFIG.empresa.whatsapp}&text=${encodeURIComponent(texto)}`;
 }

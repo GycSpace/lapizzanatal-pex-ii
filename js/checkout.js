@@ -45,6 +45,7 @@ export function gerarProximoNumeroPedido() {
  */
 let estadoCheckout = {
   etapa: 'carrinho', // 'carrinho' | 'dados' | 'sucesso'
+  tipoRecebimento: 'entrega', // 'entrega' | 'retirada'
   formaPagamento: '', // 'pix' | 'dinheiro' | 'cartao'
   precisaTroco: false,
   valorTrocoPara: 0,
@@ -71,6 +72,16 @@ let inputComplementoEl = null;
 let inputBairroEl = null;
 let inputReferenciaEl = null;
 let checkZonaNorteEl = null;
+
+let painelRecebimentoEntregaEl = null;
+let painelRecebimentoRetiradaEl = null;
+let retiradaEnderecoHorarioEl = null;
+
+let labelPagamentoCartaoTituloEl = null;
+let labelPagamentoCartaoDescEl = null;
+let textoPerguntaTrocoEl = null;
+let tituloPainelCartaoEl = null;
+let descPainelCartaoEl = null;
 
 let painelPixEl = null;
 let painelDinheiroEl = null;
@@ -312,10 +323,43 @@ export function atualizarVisualizacaoCarrinho() {
 }
 
 /**
- * Atualiza o painel de pagamento de acordo com a seleção atual
+ * Atualiza o painel de recebimento e pagamento de acordo com a seleção atual
  */
 function atualizarPaineisPagamento() {
   const total = obterTotalCarrinho();
+  const isRetirada = estadoCheckout.tipoRecebimento === 'retirada';
+
+  if (painelRecebimentoEntregaEl) {
+    painelRecebimentoEntregaEl.style.display = isRetirada ? 'none' : '';
+  }
+  if (painelRecebimentoRetiradaEl) {
+    painelRecebimentoRetiradaEl.style.display = isRetirada ? 'block' : 'none';
+  }
+  if (retiradaEnderecoHorarioEl) {
+    retiradaEnderecoHorarioEl.textContent = `${CONFIG.empresa.endereco} • ${CONFIG.empresa.horario}`;
+  }
+
+  if (labelPagamentoCartaoTituloEl) {
+    labelPagamentoCartaoTituloEl.textContent = isRetirada ? 'Cartão na retirada' : 'Cartão na entrega';
+  }
+  if (labelPagamentoCartaoDescEl) {
+    labelPagamentoCartaoDescEl.textContent = isRetirada ? 'Pagamento no balcão' : 'Levamos a maquininha';
+  }
+  if (textoPerguntaTrocoEl) {
+    textoPerguntaTrocoEl.textContent = isRetirada
+      ? 'Pagamento em espécie na retirada. Você vai precisar de troco?'
+      : 'Pagamento em espécie no ato da entrega. Você vai precisar de troco?';
+  }
+  if (tituloPainelCartaoEl) {
+    tituloPainelCartaoEl.textContent = isRetirada
+      ? '💳 Pagamento no Cartão (Crédito ou Débito) na Retirada'
+      : '💳 Pagamento no Cartão (Crédito ou Débito) na Entrega';
+  }
+  if (descPainelCartaoEl) {
+    descPainelCartaoEl.textContent = isRetirada
+      ? 'Você poderá realizar o pagamento diretamente no balcão ao retirar o seu pedido. Aceitamos as principais bandeiras de crédito e débito.'
+      : 'Nosso entregador levará a maquininha até o seu endereço. Aceitamos as principais bandeiras de crédito e débito.';
+  }
 
   if (painelPixEl) painelPixEl.style.display = estadoCheckout.formaPagamento === 'pix' ? 'block' : 'none';
   if (painelDinheiroEl) painelDinheiroEl.style.display = estadoCheckout.formaPagamento === 'dinheiro' ? 'block' : 'none';
@@ -366,30 +410,39 @@ export function validarDadosCheckout() {
     return { valido: false, erro: "Por favor, informe o seu nome." };
   }
 
-  const rua = inputRuaEl ? inputRuaEl.value.trim() : '';
-  if (!rua) {
-    return { valido: false, erro: "Por favor, informe a Rua/Avenida de entrega." };
-  }
+  const isRetirada = estadoCheckout.tipoRecebimento === 'retirada';
 
-  const numero = inputNumeroEl ? inputNumeroEl.value.trim() : '';
-  if (!numero) {
-    return { valido: false, erro: "Por favor, informe o número da residência." };
-  }
+  if (!isRetirada) {
+    const rua = inputRuaEl ? inputRuaEl.value.trim() : '';
+    if (!rua) {
+      return { valido: false, erro: "Por favor, informe a Rua/Avenida de entrega." };
+    }
 
-  const bairro = inputBairroEl ? inputBairroEl.value.trim() : '';
-  if (!bairro) {
-    return { valido: false, erro: "Por favor, informe o bairro de entrega." };
-  }
+    const numero = inputNumeroEl ? inputNumeroEl.value.trim() : '';
+    if (!numero) {
+      return { valido: false, erro: "Por favor, informe o número da residência." };
+    }
 
-  if (!checkZonaNorteEl || !checkZonaNorteEl.checked) {
-    return { 
-      valido: false, 
-      erro: "É necessário confirmar que o endereço informado está localizado na Zona Norte de Natal/RN." 
-    };
+    const bairro = inputBairroEl ? inputBairroEl.value.trim() : '';
+    if (!bairro) {
+      return { valido: false, erro: "Por favor, informe o bairro de entrega." };
+    }
+
+    if (!checkZonaNorteEl || !checkZonaNorteEl.checked) {
+      return {
+        valido: false,
+        erro: "É necessário confirmar que o endereço informado está localizado na Zona Norte de Natal/RN."
+      };
+    }
   }
 
   if (!estadoCheckout.formaPagamento) {
-    return { valido: false, erro: "Por favor, selecione uma forma de pagamento (Pix, Dinheiro ou Cartão na entrega)." };
+    return {
+      valido: false,
+      erro: isRetirada
+        ? "Por favor, selecione uma forma de pagamento (Pix, Dinheiro ou Cartão na retirada)."
+        : "Por favor, selecione uma forma de pagamento (Pix, Dinheiro ou Cartão na entrega)."
+    };
   }
 
   if (estadoCheckout.formaPagamento === 'dinheiro' && estadoCheckout.precisaTroco) {
@@ -406,22 +459,29 @@ export function validarDadosCheckout() {
 
 /**
  * Constrói a mensagem estruturada para envio oficial via WhatsApp
- * @param {Object} pedido 
+ * @param {Object} pedido
  * @returns {string} Texto formatado
  */
 export function montarMensagemPedidoWhatsapp(pedido) {
+  const isRetirada = pedido.tipoRecebimento === 'retirada';
   let texto = `Olá, boa noite! 🍕\n\n`;
   texto += `*NOVO PEDIDO #${pedido.numero}*\n\n`;
-  
+
   texto += `👤 *Cliente:*\n${pedido.nome}\n\n`;
-  
-  texto += `📍 *ENTREGA*\n`;
-  texto += `Rua: ${pedido.rua}\n`;
-  texto += `Número: ${pedido.numeroEnd}\n`;
-  if (pedido.complemento) texto += `Complemento: ${pedido.complemento}\n`;
-  texto += `Bairro: ${pedido.bairro}\n`;
-  if (pedido.referencia) texto += `Referência: ${pedido.referencia}\n`;
-  texto += `(Zona Norte de Natal/RN)\n\n`;
+
+  if (isRetirada) {
+    texto += `🏪 *RETIRADA NO BALCÃO*\n`;
+    texto += `Endereço: ${CONFIG.empresa.endereco}\n`;
+    texto += `Horário: ${CONFIG.empresa.horario}\n\n`;
+  } else {
+    texto += `📍 *ENTREGA*\n`;
+    texto += `Rua: ${pedido.rua}\n`;
+    texto += `Número: ${pedido.numeroEnd}\n`;
+    if (pedido.complemento) texto += `Complemento: ${pedido.complemento}\n`;
+    texto += `Bairro: ${pedido.bairro}\n`;
+    if (pedido.referencia) texto += `Referência: ${pedido.referencia}\n`;
+    texto += `(Zona Norte de Natal/RN)\n\n`;
+  }
 
   texto += `🛒 *PEDIDO*\n`;
   pedido.itens.forEach(item => {
@@ -448,11 +508,13 @@ export function montarMensagemPedidoWhatsapp(pedido) {
       texto += `Não precisa de troco.\n\n`;
     }
   } else if (pedido.formaPagamento === 'cartao') {
-    texto += `Forma: Cartão na entrega\n\n`;
+    texto += `Forma: ${isRetirada ? 'Cartão na retirada' : 'Cartão na entrega'}\n\n`;
   }
 
   texto += `Subtotal: ${formatarMoeda(pedido.total)}\n`;
-  texto += `Taxa de entrega: R$ 0,00\n`;
+  if (!isRetirada) {
+    texto += `Taxa de entrega: R$ 0,00\n`;
+  }
   texto += `*TOTAL: ${formatarMoeda(pedido.total)}*`;
 
   return texto;
@@ -460,12 +522,12 @@ export function montarMensagemPedidoWhatsapp(pedido) {
 
 /**
  * Constrói o link do WhatsApp para o pedido completo
- * @param {Object} pedido 
+ * @param {Object} pedido
  * @returns {string} URL
  */
 export function gerarLinkPedidoWhatsapp(pedido) {
   const mensagem = montarMensagemPedidoWhatsapp(pedido);
-  return `https://wa.me/${CONFIG.empresa.whatsapp}?text=${encodeURIComponent(mensagem)}`;
+  return `https://api.whatsapp.com/send?phone=${CONFIG.empresa.whatsapp}&text=${encodeURIComponent(mensagem)}`;
 }
 
 /**
@@ -494,16 +556,19 @@ function finalizarPedido() {
     trocoEstimado = resTroco.troco;
   }
 
+  const isRetirada = estadoCheckout.tipoRecebimento === 'retirada';
+
   // Criação do objeto do pedido estruturado
   const pedido = {
     numero: numeroPedido,
     dataHora: new Date().toISOString(),
+    tipoRecebimento: isRetirada ? 'retirada' : 'entrega',
     nome: inputNomeEl.value.trim(),
-    rua: inputRuaEl.value.trim(),
-    numeroEnd: inputNumeroEl.value.trim(),
-    complemento: inputComplementoEl ? inputComplementoEl.value.trim() : '',
-    bairro: inputBairroEl.value.trim(),
-    referencia: inputReferenciaEl ? inputReferenciaEl.value.trim() : '',
+    rua: isRetirada ? '' : inputRuaEl.value.trim(),
+    numeroEnd: isRetirada ? '' : inputNumeroEl.value.trim(),
+    complemento: isRetirada ? '' : (inputComplementoEl ? inputComplementoEl.value.trim() : ''),
+    bairro: isRetirada ? '' : inputBairroEl.value.trim(),
+    referencia: isRetirada ? '' : (inputReferenciaEl ? inputReferenciaEl.value.trim() : ''),
     itens: [...itens],
     total: total,
     formaPagamento: estadoCheckout.formaPagamento,
@@ -574,6 +639,16 @@ export function inicializarElementosCheckout() {
   inputReferenciaEl = document.getElementById('checkout-referencia');
   checkZonaNorteEl = document.getElementById('checkout-confirma-zona-norte');
 
+  painelRecebimentoEntregaEl = document.getElementById('painel-recebimento-entrega');
+  painelRecebimentoRetiradaEl = document.getElementById('painel-recebimento-retirada');
+  retiradaEnderecoHorarioEl = document.getElementById('retirada-endereco-horario');
+
+  labelPagamentoCartaoTituloEl = document.getElementById('label-pagamento-cartao-titulo');
+  labelPagamentoCartaoDescEl = document.getElementById('label-pagamento-cartao-desc');
+  textoPerguntaTrocoEl = document.getElementById('texto-pergunta-troco');
+  tituloPainelCartaoEl = document.getElementById('titulo-painel-cartao');
+  descPainelCartaoEl = document.getElementById('desc-painel-cartao');
+
   painelPixEl = document.getElementById('painel-pagamento-pix');
   painelDinheiroEl = document.getElementById('painel-pagamento-dinheiro');
   painelCartaoEl = document.getElementById('painel-pagamento-cartao');
@@ -639,6 +714,20 @@ export function inicializarElementosCheckout() {
       if (modalContent) modalContent.scrollTop = 0;
     });
   }
+
+  // Radios de modalidade de recebimento (entrega / retirada)
+  const radiosRecebimento = document.querySelectorAll('input[name="tipo-recebimento"]');
+  radiosRecebimento.forEach(radio => {
+    if (radio.checked) {
+      estadoCheckout.tipoRecebimento = radio.value;
+    }
+    radio.addEventListener('change', () => {
+      if (radio.checked) {
+        estadoCheckout.tipoRecebimento = radio.value;
+        atualizarPaineisPagamento();
+      }
+    });
+  });
 
   // Radios de forma de pagamento
   const radiosPagamento = document.querySelectorAll('input[name="forma-pagamento"]');

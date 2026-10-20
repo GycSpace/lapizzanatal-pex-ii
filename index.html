@@ -311,7 +311,7 @@
             </div>
 
             <button type="button" id="btn-avancar-checkout" class="btn-primary-action">
-              Prosseguir para entrega →
+              Prosseguir para entrega / retirada →
             </button>
           </footer>
         </div>
@@ -334,47 +334,77 @@
             </div>
           </section>
 
-          <!-- 2. ENDEREÇO DE ENTREGA -->
+          <!-- 2. RECEBIMENTO DO PEDIDO (ENTREGA OU RETIRADA NO BALCÃO) -->
           <section class="checkout-form-section">
-            <h3 class="form-section-title">2. Endereço de entrega</h3>
-            
-            <div class="delivery-warning-box">
-              <span class="warning-icon">📍</span>
-              <div>
-                <strong>Entregas exclusivamente na Zona Norte de Natal/RN.</strong>
-                <p>Não cobramos taxa de entrega.</p>
-              </div>
-            </div>
+            <h3 class="form-section-title">2. Recebimento do pedido <span class="step-required">*</span></h3>
 
             <div class="form-grid-2">
-              <div class="form-group span-2">
-                <label for="checkout-rua" class="form-label">Rua / Avenida <span class="step-required">*</span></label>
-                <input type="text" id="checkout-rua" class="form-input" placeholder="Ex: Av. Senhor do Bonfim" required autocomplete="street-address">
+              <label class="payment-card-label">
+                <input type="radio" name="tipo-recebimento" id="recebimento-entrega" value="entrega" checked>
+                <div class="payment-card-content">
+                  <span class="pay-title">🛵 Entrega</span>
+                  <span class="pay-desc">Grátis &bull; Zona Norte</span>
+                </div>
+              </label>
+
+              <label class="payment-card-label">
+                <input type="radio" name="tipo-recebimento" id="recebimento-retirada" value="retirada">
+                <div class="payment-card-content">
+                  <span class="pay-title">🏪 Retirada no balcão</span>
+                  <span class="pay-desc">Buscar no estabelecimento</span>
+                </div>
+              </label>
+            </div>
+
+            <div id="painel-recebimento-entrega" class="checkout-form-section">
+              <div class="delivery-warning-box">
+                <span class="warning-icon">📍</span>
+                <div>
+                  <strong>Entregas exclusivamente na Zona Norte de Natal/RN.</strong>
+                  <p>Não cobramos taxa de entrega.</p>
+                </div>
               </div>
-              <div class="form-group">
-                <label for="checkout-numero" class="form-label">Número <span class="step-required">*</span></label>
-                <input type="text" id="checkout-numero" class="form-input" placeholder="Ex: 4135" required>
+
+              <div class="form-grid-2">
+                <div class="form-group span-2">
+                  <label for="checkout-rua" class="form-label">Rua / Avenida <span class="step-required">*</span></label>
+                  <input type="text" id="checkout-rua" class="form-input" placeholder="Ex: Av. Senhor do Bonfim" autocomplete="street-address">
+                </div>
+                <div class="form-group">
+                  <label for="checkout-numero" class="form-label">Número <span class="step-required">*</span></label>
+                  <input type="text" id="checkout-numero" class="form-input" placeholder="Ex: 4135">
+                </div>
+                <div class="form-group">
+                  <label for="checkout-complemento" class="form-label">Complemento (opcional)</label>
+                  <input type="text" id="checkout-complemento" class="form-input" placeholder="Apto, Casa, Bloco...">
+                </div>
+                <div class="form-group span-2">
+                  <label for="checkout-bairro" class="form-label">Bairro <span class="step-required">*</span></label>
+                  <input type="text" id="checkout-bairro" class="form-input" placeholder="Ex: Igapó, Potengi, Pajuçara...">
+                </div>
+                <div class="form-group span-2">
+                  <label for="checkout-referencia" class="form-label">Ponto de referência (opcional)</label>
+                  <input type="text" id="checkout-referencia" class="form-input" placeholder="Ex: Próximo à praça / supermercado">
+                </div>
               </div>
-              <div class="form-group">
-                <label for="checkout-complemento" class="form-label">Complemento (opcional)</label>
-                <input type="text" id="checkout-complemento" class="form-input" placeholder="Apto, Casa, Bloco...">
-              </div>
-              <div class="form-group span-2">
-                <label for="checkout-bairro" class="form-label">Bairro <span class="step-required">*</span></label>
-                <input type="text" id="checkout-bairro" class="form-input" placeholder="Ex: Igapó, Potengi, Pajuçara..." required>
-              </div>
-              <div class="form-group span-2">
-                <label for="checkout-referencia" class="form-label">Ponto de referência (opcional)</label>
-                <input type="text" id="checkout-referencia" class="form-input" placeholder="Ex: Próximo à praça / supermercado">
+
+              <!-- Confirmação obrigatória declarada pelo cliente -->
+              <div class="form-checkbox-card">
+                <label class="checkbox-label" for="checkout-confirma-zona-norte">
+                  <input type="checkbox" id="checkout-confirma-zona-norte" class="checkbox-input">
+                  <span>Confirmo que o endereço informado está localizado na <strong>Zona Norte de Natal/RN</strong>.</span>
+                </label>
               </div>
             </div>
 
-            <!-- Confirmação obrigatória declarada pelo cliente -->
-            <div class="form-checkbox-card">
-              <label class="checkbox-label" for="checkout-confirma-zona-norte">
-                <input type="checkbox" id="checkout-confirma-zona-norte" class="checkbox-input" required>
-                <span>Confirmo que o endereço informado está localizado na <strong>Zona Norte de Natal/RN</strong>.</span>
-              </label>
+            <div id="painel-recebimento-retirada" style="display: none;">
+              <div class="delivery-warning-box">
+                <span class="warning-icon">🏪</span>
+                <div>
+                  <strong>Retirada no balcão da LaPizzaNatal</strong>
+                  <p id="retirada-endereco-horario"></p>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -405,8 +435,8 @@
                 <input type="radio" name="forma-pagamento" value="cartao">
                 <div class="payment-card-content">
                   <span class="pay-icon">💳</span>
-                  <span class="pay-title">Cartão na entrega</span>
-                  <span class="pay-desc">Maquininha na sua porta</span>
+                  <span id="label-pagamento-cartao-titulo" class="pay-title">Cartão na entrega</span>
+                  <span id="label-pagamento-cartao-desc" class="pay-desc">Maquininha na sua porta</span>
                 </div>
               </label>
             </div>
@@ -444,7 +474,7 @@
             <!-- PAINEL DINÂMICO 2: DINHEIRO -->
             <div id="painel-pagamento-dinheiro" class="payment-panel-detail" style="display: none;">
               <h4 class="panel-detail-title">Pagamento em Dinheiro</h4>
-              <p class="panel-detail-desc">Você precisará de troco na entrega?</p>
+              <p id="texto-pergunta-troco" class="panel-detail-desc">Você precisará de troco na entrega?</p>
 
               <div class="troco-options">
                 <label class="troco-option-label">
@@ -469,8 +499,8 @@
 
             <!-- PAINEL DINÂMICO 3: CARTÃO NA ENTREGA -->
             <div id="painel-pagamento-cartao" class="payment-panel-detail" style="display: none;">
-              <h4 class="panel-detail-title">Cartão na Entrega</h4>
-              <p class="card-machine-notice">
+              <h4 id="titulo-painel-cartao" class="panel-detail-title">Cartão na Entrega</h4>
+              <p id="desc-painel-cartao" class="card-machine-notice">
                 O pagamento será realizado no momento da entrega, utilizando a maquininha da LaPizzaNatal (Débito ou Crédito).
               </p>
             </div>
