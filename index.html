@@ -444,7 +444,7 @@
             <!-- PAINEL DINÂMICO 1: PIX -->
             <div id="painel-pagamento-pix" class="payment-panel-detail" style="display: none;">
               <h4 class="panel-detail-title">Pagamento via Pix</h4>
-              <p class="panel-detail-desc">Utilize o aplicativo do seu banco para ler o QR Code ou copie a chave Pix:</p>
+              <p class="panel-detail-desc">Utilize o aplicativo do seu banco para ler o QR Code ou use o código Pix Copia e Cola:</p>
               
               <div class="pix-qrcode-wrapper">
                 <div id="pix-qrcode-container" class="pix-qrcode-box">
@@ -452,14 +452,25 @@
                 </div>
               </div>
 
+              <div class="pix-valor-destaque-box">
+                <span class="pix-valor-label">Valor a pagar no Pix:</span>
+                <strong id="pix-valor-dados" class="pix-valor-valor">R$ 0,00</strong>
+              </div>
+
+              <div class="pix-actions-box">
+                <button type="button" id="btn-copiar-payload-pix" class="btn-copy-pix btn-copy-pix-main">
+                  📋 Copiar código Pix (Copia e Cola)
+                </button>
+              </div>
+
               <div class="pix-key-box">
                 <div class="pix-key-info">
                   <span class="pix-key-label">Chave Pix (Telefone):</span>
-                  <strong id="pix-chave-texto" class="pix-key-value">84998992266</strong>
+                  <strong id="pix-chave-texto" class="pix-key-value">(84) 99899-2266</strong>
                   <span class="pix-receiver">Recebedor: <strong>Guido O. R. da Trindade</strong> &bull; Natal/RN</span>
                 </div>
-                <button type="button" id="btn-copiar-chave-pix" class="btn-copy-pix">
-                  📋 Copiar chave Pix
+                <button type="button" id="btn-copiar-chave-pix" class="btn-copy-pix-secondary">
+                  Copiar somente a chave Pix
                 </button>
               </div>
 
@@ -528,6 +539,46 @@
           <p class="sucesso-msg">
             Seu pedido foi estruturado e está pronto para ser enviado à <strong>LaPizzaNatal</strong>.
           </p>
+
+          <!-- BLOCO PIX NA TELA DE SUCESSO (visível apenas para pagamento Pix) -->
+          <div id="sucesso-pix-container" class="sucesso-pix-card" style="display: none;">
+            <div class="sucesso-pix-header">
+              <span class="sucesso-pix-icon">💠</span>
+              <div>
+                <h3 class="sucesso-pix-titulo">Pagamento via Pix do Pedido</h3>
+                <p class="sucesso-pix-subtitulo">Pague pelo QR Code ou Copia e Cola e envie o comprovante em seguida.</p>
+              </div>
+            </div>
+
+            <div class="pix-qrcode-wrapper">
+              <div id="sucesso-pix-qrcode-container" class="pix-qrcode-box">
+                <!-- QR Code SVG inserido dinamicamente com txid do pedido -->
+              </div>
+            </div>
+
+            <div class="pix-valor-destaque-box">
+              <span class="pix-valor-label">Valor do pedido:</span>
+              <strong id="sucesso-pix-valor" class="pix-valor-valor">R$ 0,00</strong>
+            </div>
+
+            <div class="pix-actions-box">
+              <button type="button" id="btn-sucesso-copiar-payload-pix" class="btn-copy-pix btn-copy-pix-main">
+                📋 Copiar código Pix (Copia e Cola)
+              </button>
+            </div>
+
+            <div class="pix-key-box">
+              <div class="pix-key-info">
+                <span class="pix-key-label">Chave Pix (Telefone):</span>
+                <strong id="sucesso-pix-chave-texto" class="pix-key-value">(84) 99899-2266</strong>
+                <span class="pix-receiver">Recebedor: <strong>Guido O. R. da Trindade</strong> &bull; Natal/RN</span>
+              </div>
+              <button type="button" id="btn-sucesso-copiar-chave-pix" class="btn-copy-pix-secondary">
+                Copiar somente a chave Pix
+              </button>
+            </div>
+          </div>
+
           <p class="sucesso-submsg">
             Clique no botão abaixo para abrir a conversa no WhatsApp com todos os detalhes do seu pedido formatados:
           </p>

@@ -8,7 +8,7 @@ import {
   removerItem, 
   limparCarrinho 
 } from './carrinho.js';
-import { formatarMoeda, converterValorTroco } from './utils.js';
+import { formatarMoeda, converterValorTroco, copiarParaAreaDeTransferencia } from './utils.js';
 import { obterDadosPix, calcularTroco, gerarLinkComprovantePix } from './pagamento.js';
 import { exibirToast } from './configurador.js?v=3';
 
@@ -92,10 +92,22 @@ let wrapperTrocoValorEl = null;
 let inputTrocoParaEl = null;
 let resultadoTrocoEl = null;
 
+let ultimoPayloadPix = '';
+let ultimoPayloadPixSucesso = '';
+
 let qrCodeContainerEl = null;
 let chavePixTextoEl = null;
+let pixValorDadosEl = null;
+let btnCopiarPayloadPixEl = null;
 let btnCopiarChavePixEl = null;
 let btnComprovantePixTopoEl = null;
+
+let sucessoPixContainerEl = null;
+let sucessoPixQrCodeContainerEl = null;
+let sucessoPixValorEl = null;
+let sucessoPixChaveTextoEl = null;
+let btnSucessoCopiarPayloadPixEl = null;
+let btnSucessoCopiarChavePixEl = null;
 
 let btnAvancarCheckoutEl = null;
 let btnVoltarCarrinhoEl = null;
@@ -367,11 +379,35 @@ function atualizarPaineisPagamento() {
 
   if (estadoCheckout.formaPagamento === 'pix') {
     const dadosPix = obterDadosPix(total, 'PEDIDO');
-    if (qrCodeContainerEl) {
-      qrCodeContainerEl.innerHTML = dadosPix.qrCodeSvg;
-    }
-    if (chavePixTextoEl) {
-      chavePixTextoEl.textContent = dadosPix.chave;
+    if (dadosPix.valido && dadosPix.payload) {
+      ultimoPayloadPix = dadosPix.payload;
+      if (qrCodeContainerEl) {
+        qrCodeContainerEl.innerHTML = dadosPix.qrCodeSvg;
+        qrCodeContainerEl.classList.remove('pix-error-state');
+      }
+      if (chavePixTextoEl) {
+        chavePixTextoEl.textContent = dadosPix.chaveFormatada || dadosPix.chave;
+      }
+      if (pixValorDadosEl) {
+        pixValorDadosEl.textContent = formatarMoeda(total);
+      }
+      if (btnCopiarPayloadPixEl) {
+        btnCopiarPayloadPixEl.disabled = false;
+        btnCopiarPayloadPixEl.removeAttribute('aria-disabled');
+      }
+    } else {
+      ultimoPayloadPix = '';
+      if (qrCodeContainerEl) {
+        qrCodeContainerEl.innerHTML = `<p class="pix-error-msg">${dadosPix.erro || 'Não foi possível gerar os dados do Pix. Revise o valor do pedido.'}</p>`;
+        qrCodeContainerEl.classList.add('pix-error-state');
+      }
+      if (pixValorDadosEl) {
+        pixValorDadosEl.textContent = formatarMoeda(typeof total === 'number' && !isNaN(total) ? Math.max(0, total) : 0);
+      }
+      if (btnCopiarPayloadPixEl) {
+        btnCopiarPayloadPixEl.disabled = true;
+        btnCopiarPayloadPixEl.setAttribute('aria-disabled', 'true');
+      }
     }
   }
 
@@ -451,6 +487,16 @@ export function validarDadosCheckout() {
     const resTroco = calcularTroco(total, valorDigitado);
     if (!resTroco.valido) {
       return { valido: false, erro: resTroco.erro };
+    }
+  }
+
+  if (estadoCheckout.formaPagamento === 'pix') {
+    const totalCarrinho = obterTotalCarrinho();
+    if (typeof totalCarrinho !== 'number' || !Number.isFinite(totalCarrinho) || isNaN(totalCarrinho) || totalCarrinho <= 0) {
+      return {
+        valido: false,
+        erro: "O total do pedido deve ser maior que zero para pagamento via Pix. Revise os itens do seu carrinho."
+      };
     }
   }
 
@@ -597,7 +643,7 @@ function finalizarPedido() {
   }
 
   if (btnWhatsappComprovanteEl) {
-    if (pedido.formaPagamento === 'pix') {
+    if (pedido.formaPagamento === 'pix' && typeof pedido.total === 'number' && Number.isFinite(pedido.total) && pedido.total > 0) {
       btnWhatsappComprovanteEl.style.display = 'inline-flex';
       const linkComprovante = gerarLinkComprovantePix({
         numeroPedido: pedido.numero,
@@ -609,6 +655,44 @@ function finalizarPedido() {
       };
     } else {
       btnWhatsappComprovanteEl.style.display = 'none';
+    }
+  }
+
+  // Renderizar bloco Pix na tela de sucesso quando o pagamento for Pix com valor válido
+  if (sucessoPixContainerEl) {
+    if (pedido.formaPagamento === 'pix') {
+      const dadosPixSucesso = obterDadosPix(pedido.total, pedido.numero);
+      if (dadosPixSucesso.valido && dadosPixSucesso.payload) {
+        sucessoPixContainerEl.style.display = 'block';
+        ultimoPayloadPixSucesso = dadosPixSucesso.payload;
+        if (sucessoPixQrCodeContainerEl) {
+          sucessoPixQrCodeContainerEl.innerHTML = dadosPixSucesso.qrCodeSvg;
+        }
+        if (sucessoPixValorEl) {
+          sucessoPixValorEl.textContent = formatarMoeda(pedido.total);
+        }
+        if (sucessoPixChaveTextoEl) {
+          sucessoPixChaveTextoEl.textContent = dadosPixSucesso.chaveFormatada || dadosPixSucesso.chave;
+        }
+        if (btnSucessoCopiarPayloadPixEl) {
+          btnSucessoCopiarPayloadPixEl.disabled = false;
+          btnSucessoCopiarPayloadPixEl.removeAttribute('aria-disabled');
+        }
+      } else {
+        sucessoPixContainerEl.style.display = 'none';
+        ultimoPayloadPixSucesso = '';
+        if (btnSucessoCopiarPayloadPixEl) {
+          btnSucessoCopiarPayloadPixEl.disabled = true;
+          btnSucessoCopiarPayloadPixEl.setAttribute('aria-disabled', 'true');
+        }
+      }
+    } else {
+      sucessoPixContainerEl.style.display = 'none';
+      ultimoPayloadPixSucesso = '';
+      if (btnSucessoCopiarPayloadPixEl) {
+        btnSucessoCopiarPayloadPixEl.disabled = true;
+        btnSucessoCopiarPayloadPixEl.setAttribute('aria-disabled', 'true');
+      }
     }
   }
 
@@ -660,8 +744,17 @@ export function inicializarElementosCheckout() {
 
   qrCodeContainerEl = document.getElementById('pix-qrcode-container');
   chavePixTextoEl = document.getElementById('pix-chave-texto');
+  pixValorDadosEl = document.getElementById('pix-valor-dados');
+  btnCopiarPayloadPixEl = document.getElementById('btn-copiar-payload-pix');
   btnCopiarChavePixEl = document.getElementById('btn-copiar-chave-pix');
   btnComprovantePixTopoEl = document.getElementById('btn-enviar-comprovante-topo');
+
+  sucessoPixContainerEl = document.getElementById('sucesso-pix-container');
+  sucessoPixQrCodeContainerEl = document.getElementById('sucesso-pix-qrcode-container');
+  sucessoPixValorEl = document.getElementById('sucesso-pix-valor');
+  sucessoPixChaveTextoEl = document.getElementById('sucesso-pix-chave-texto');
+  btnSucessoCopiarPayloadPixEl = document.getElementById('btn-sucesso-copiar-payload-pix');
+  btnSucessoCopiarChavePixEl = document.getElementById('btn-sucesso-copiar-chave-pix');
 
   btnAvancarCheckoutEl = document.getElementById('btn-avancar-checkout');
   btnVoltarCarrinhoEl = document.getElementById('btn-voltar-para-carrinho');
@@ -759,18 +852,60 @@ export function inicializarElementosCheckout() {
     });
   }
 
-  // Botão copiar chave Pix
-  if (btnCopiarChavePixEl) {
-    btnCopiarChavePixEl.addEventListener('click', () => {
-      const chave = CONFIG.pagamento.pix.chave;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(chave).then(() => {
-          exibirToast("✅ Chave Pix copiada!");
-        }).catch(() => {
-          exibirToast(`Chave Pix: ${chave}`);
-        });
+  // Botão copiar payload Pix (Copia e Cola - Etapa Dados)
+  if (btnCopiarPayloadPixEl) {
+    btnCopiarPayloadPixEl.addEventListener('click', async () => {
+      if (!ultimoPayloadPix) {
+        exibirToast("❌ Código Pix não disponível.");
+        return;
+      }
+      const copiou = await copiarParaAreaDeTransferencia(ultimoPayloadPix);
+      if (copiou) {
+        exibirToast("✅ Código Pix (Copia e Cola) copiado!");
       } else {
-        exibirToast(`Chave Pix: ${chave}`);
+        exibirToast("❌ Não foi possível copiar automaticamente.");
+      }
+    });
+  }
+
+  // Botão copiar chave Pix (Etapa Dados)
+  if (btnCopiarChavePixEl) {
+    btnCopiarChavePixEl.addEventListener('click', async () => {
+      const chave = CONFIG.pagamento.pix.chave.replace(/^\+55/, '');
+      const copiou = await copiarParaAreaDeTransferencia(chave);
+      if (copiou) {
+        exibirToast("✅ Chave Pix copiada!");
+      } else {
+        exibirToast("❌ Não foi possível copiar a chave.");
+      }
+    });
+  }
+
+  // Botão copiar payload Pix (Copia e Cola - Tela de Sucesso)
+  if (btnSucessoCopiarPayloadPixEl) {
+    btnSucessoCopiarPayloadPixEl.addEventListener('click', async () => {
+      if (!ultimoPayloadPixSucesso) {
+        exibirToast("❌ Código Pix do pedido não disponível.");
+        return;
+      }
+      const copiou = await copiarParaAreaDeTransferencia(ultimoPayloadPixSucesso);
+      if (copiou) {
+        exibirToast("✅ Código Pix (Copia e Cola) copiado!");
+      } else {
+        exibirToast("❌ Não foi possível copiar automaticamente.");
+      }
+    });
+  }
+
+  // Botão copiar chave Pix (Tela de Sucesso)
+  if (btnSucessoCopiarChavePixEl) {
+    btnSucessoCopiarChavePixEl.addEventListener('click', async () => {
+      const chave = CONFIG.pagamento.pix.chave.replace(/^\+55/, '');
+      const copiou = await copiarParaAreaDeTransferencia(chave);
+      if (copiou) {
+        exibirToast("✅ Chave Pix copiada!");
+      } else {
+        exibirToast("❌ Não foi possível copiar a chave.");
       }
     });
   }

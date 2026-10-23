@@ -4,10 +4,10 @@ import { gerarQrCodeSvg } from './qrcode.js';
 
 /**
  * Calcula o checksum CRC16 CCITT padrão do Banco Central para o BR Code
- * @param {string} str 
+ * @param {string} str
  * @returns {string} 4 caracteres hexadecimais em maiúsculo
  */
-function calcularCrc16(str) {
+export function calcularCrc16(str) {
   let crc = 0xFFFF;
   for (let c = 0; c < str.length; c++) {
     crc ^= str.charCodeAt(c) << 8;
@@ -43,17 +43,49 @@ function normalizarTexto(str) {
 }
 
 /**
- * Gera o payload oficial do Pix Copia e Cola (BR Code) com valor dinâmico
- * @param {number} valor 
- * @param {string} numeroPedido 
- * @returns {string} Código Pix completo
+ * Normaliza a chave Pix para o padrão internacional exigido pelo BACEN no BR Code.
+ * Chaves de telefone celular no DICT devem ser formatadas conforme E.164 (+55...).
+ * @param {string} chave
+ * @returns {string}
+ */
+export function normalizarChavePix(chave) {
+  const limpa = String(chave || '').trim();
+  if (/^\d{10,11}$/.test(limpa)) {
+    return `+55${limpa}`;
+  }
+  if (/^55\d{10,11}$/.test(limpa)) {
+    return `+${limpa}`;
+  }
+  return limpa;
+}
+
+/**
+ * Valida se um valor monetário para Pix é um número finito e estritamente positivo
+ * @param {*} valor
+ * @returns {boolean}
+ */
+export function validarValorPix(valor) {
+  return typeof valor === 'number' && Number.isFinite(valor) && !isNaN(valor) && valor > 0;
+}
+
+/**
+ * Gera o payload oficial do Pix Copia e Cola (BR Code estático) com valor e identificador.
+ * Retorna null se o valor informado não for numérico, finito e estritamente positivo.
+ * @param {number} valor
+ * @param {string|number} numeroPedido
+ * @returns {string|null} Código Pix completo ou null se inválido
  */
 export function gerarPayloadPix(valor, numeroPedido = '***') {
-  const chave = CONFIG.pagamento.pix.chave;
+  if (!validarValorPix(valor)) {
+    return null;
+  }
+
+  const chave = normalizarChavePix(CONFIG.pagamento.pix.chave);
   const nome = normalizarTexto(CONFIG.pagamento.pix.nomeRecebedor).substring(0, 25);
   const cidade = normalizarTexto(CONFIG.pagamento.pix.cidade).substring(0, 15);
-  const valorStr = Number(valor).toFixed(2);
-  const txid = normalizarTexto(String(numeroPedido)).replace(/[^a-zA-Z0-9]/g, '') || '***';
+  const valorStr = valor.toFixed(2);
+  const txidLimpo = normalizarTexto(String(numeroPedido)).replace(/[^a-zA-Z0-9]/g, '').substring(0, 25);
+  const txid = txidLimpo || '***';
 
   // Subcampos do Merchant Account Information (ID 26)
   const gui = formatarTlv('00', 'br.gov.bcb.pix');
@@ -65,16 +97,17 @@ export function gerarPayloadPix(valor, numeroPedido = '***') {
   const campoAdicional = formatarTlv('62', campoTxid);
 
   let payload = 
-    formatarTlv('00', '01') + // Payload Format Indicator
-    conta +                   // Merchant Account Information
-    formatarTlv('52', '0000') + // Merchant Category Code
-    formatarTlv('53', '986') +  // Moeda (986 = BRL)
-    formatarTlv('54', valorStr) + // Valor da transação
-    formatarTlv('58', 'BR') +   // País
-    formatarTlv('59', nome) +   // Nome do recebedor
-    formatarTlv('60', cidade) + // Cidade
-    campoAdicional +            // Dados adicionais (txid)
-    '6304';                     // Início do CRC16
+    formatarTlv('00', '01') +      // 000201: Payload Format Indicator
+    formatarTlv('01', '11') +      // 010211: Point of Initiation Method (11 = QR Estático)
+    conta +                        // 26...: Merchant Account Information
+    formatarTlv('52', '0000') +    // 52040000: Merchant Category Code (0000)
+    formatarTlv('53', '986') +     // 5303986: Moeda (986 = BRL)
+    formatarTlv('54', valorStr) +  // 54...: Valor da transação (obrigatório pelo requisito)
+    formatarTlv('58', 'BR') +      // 5802BR: País
+    formatarTlv('59', nome) +      // 59...: Nome do recebedor
+    formatarTlv('60', cidade) +    // 60...: Cidade
+    campoAdicional +               // 62...: Dados adicionais (txid)
+    '6304';                        // Início do CRC16
 
   payload += calcularCrc16(payload);
   return payload;
@@ -82,16 +115,32 @@ export function gerarPayloadPix(valor, numeroPedido = '***') {
 
 /**
  * Retorna os dados completos para renderização do Pix na interface
- * @param {number} valorTotal 
- * @param {string} numeroPedido 
+ * @param {number} valorTotal
+ * @param {string|number} numeroPedido
  * @returns {Object}
  */
 export function obterDadosPix(valorTotal, numeroPedido) {
+  if (!validarValorPix(valorTotal)) {
+    return {
+      valido: false,
+      erro: "Não foi possível gerar os dados do Pix. Revise o valor do pedido.",
+      chave: CONFIG.pagamento.pix.chave,
+      chaveFormatada: CONFIG.pagamento.pix.chaveFormatada || CONFIG.pagamento.pix.chave,
+      nomeRecebedor: CONFIG.pagamento.pix.nomeRecebedor,
+      cidade: CONFIG.pagamento.pix.cidade,
+      valor: valorTotal,
+      payload: null,
+      qrCodeSvg: null
+    };
+  }
+
   const payload = gerarPayloadPix(valorTotal, numeroPedido);
-  const qrCodeSvg = gerarQrCodeSvg(payload, 4, 1);
+  const qrCodeSvg = payload ? gerarQrCodeSvg(payload, 4, 1) : null;
 
   return {
+    valido: true,
     chave: CONFIG.pagamento.pix.chave,
+    chaveFormatada: CONFIG.pagamento.pix.chaveFormatada || CONFIG.pagamento.pix.chave,
     nomeRecebedor: CONFIG.pagamento.pix.nomeRecebedor,
     cidade: CONFIG.pagamento.pix.cidade,
     valor: valorTotal,

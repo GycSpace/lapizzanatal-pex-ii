@@ -26,3 +26,44 @@ export function converterValorTroco(valorBruto) {
   }
   return Number(texto.replace(',', '.'));
 }
+
+/**
+ * Copia um texto para a área de transferência com tratamento seguro e fallback
+ * @param {string} texto
+ * @returns {Promise<boolean>}
+ */
+export async function copiarParaAreaDeTransferencia(texto) {
+  if (typeof texto !== 'string' || !texto) return false;
+
+  // 1. Tentar Clipboard API moderna
+  if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    try {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    } catch (e) {
+      // Falha ou falta de permissão; prossegue para o fallback
+    }
+  }
+
+  // 2. Fallback usando textarea temporário
+  if (typeof document !== 'undefined') {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = texto;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      textArea.setAttribute('readonly', '');
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const copiado = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return Boolean(copiado);
+    } catch (err) {
+      return false;
+    }
+  }
+
+  return false;
+}

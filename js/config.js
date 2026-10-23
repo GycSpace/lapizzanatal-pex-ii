@@ -16,7 +16,8 @@ export const CONFIG = {
 
   pagamento: {
     pix: {
-      chave: "84998992266",
+      chave: "+5584998992266",
+      chaveFormatada: "(84) 99899-2266",
       nomeRecebedor: "Guido O. R. da Trindade",
       cidade: "NATAL"
     }
